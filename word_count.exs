@@ -1,34 +1,62 @@
 # Read in a file, count number of words in it
 
-filename =
-  IO.gets("File to count: ")
+cli_args =
+  IO.gets("""
+  File counter 2000:
+
+  Usage: [filename] -[flags]
+  -w      display word count (default)
+  -l      display line count
+  -c      display character count
+  Use zero or more options.
+
+  Enter File name:
+  """)
   |> String.trim()
+  |> String.split("-")
+
+filename = List.first(cli_args) |> String.trim()
+
+IO.inspect(filename)
+IO.inspect(cli_args)
+
+options =
+  case Enum.at(cli_args, 1) do
+    nil ->
+      ["w"]
+
+    args ->
+      # split everything
+      String.split(args, "")
+      # remove empty strings
+      |> Enum.filter(fn x -> x != "" end)
+  end
 
 body = File.read!(filename)
 
-option =
-  IO.gets("Do you want to count words, lines, or characters? ")
-  |> String.trim()
+lines =
+  String.split(body, "\n")
+  |> Enum.count()
 
-case option do
-  "lines" ->
-    String.split(body, "\n")
-    |> Enum.count()
-    |> IO.puts()
+# remove non word characters, keep contracttions
+words =
+  String.split(body, ~r{(\\n|[^\w']|_)+})
+  # remove empty words
+  |> Enum.filter(fn x -> x != "" end)
+  |> Enum.count()
 
-  "characters" ->
-    # remove non word characters, keep contracttions
-    String.split(body, "")
-    # remove empty words
-    |> Enum.filter(fn x -> x != "" end)
-    |> Enum.count()
-    |> IO.puts()
+# split on all the things
+chars =
+  String.split(body, "")
+  # remove empty words
+  |> Enum.filter(fn x -> x != "" end)
+  |> Enum.count()
 
-  _ ->
-    # remove non word characters, keep contracttions
-    String.split(body, ~r{(\\n|[^\w']|_)+})
-    # remove empty words
-    |> Enum.filter(fn x -> x != "" end)
-    |> Enum.count()
-    |> IO.puts()
-end
+Enum.each(options, fn opt ->
+  case opt do
+    "w" -> IO.puts("Words: #{words}")
+    "l" -> IO.puts("Lines: #{lines}")
+    "c" -> IO.puts("Chars: #{chars}")
+    _ -> nil
+  end
+end)
