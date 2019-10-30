@@ -1,10 +1,12 @@
 defmodule ImageMover do
+  @image_dir_name "images"
+
   @moduledoc """
   Finds all files in current working directory that endin in
   `.jpg`, `.gif`, `.bmp` or `.png`
-  then moves them to a sub-directory called `images`.
+  then moves them to a sub-directory called `#{@image_dir_name}`.
 
-  If the `images` directory does not exist, it will be created.
+  If the `#{@image_dir_name}` directory does not exist, it will be created.
 
   This is my solution to alchemist.camp Challenge 3 from
   https://alchemist.camp/episodes/minimal-todo-1
@@ -14,13 +16,18 @@ defmodule ImageMover do
   Entry point to the tool
   """
   def start() do
-    create_directory()
+    create_directory!()
 
     Path.wildcard("*.{jpg,gif,bmp,png}")
     |> move()
   end
 
-  defp create_directory(path \\ "images") do
+  @doc """
+  If the given `path` does not exist, create it
+
+  If path can not be given, raise Error
+  """
+  def create_directory!(path \\ @image_dir_name) do
     img_path = Path.relative_to_cwd(path)
 
     unless File.dir?(img_path) do
@@ -29,7 +36,13 @@ defmodule ImageMover do
     end
   end
 
-  defp move(files, path \\ "images") do
+  @doc """
+  Move each item in the `files` list into the given
+  `path`.
+
+  `path` defaults to '#{@image_dir_name}'
+  """
+  def move(files, path \\ @image_dir_name) do
     Enum.each(files, fn x ->
       File.rename(x, Path.join(path, x))
       IO.puts("Moved '#{x}' to '#{path}'")
