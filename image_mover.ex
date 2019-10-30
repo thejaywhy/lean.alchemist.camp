@@ -30,8 +30,8 @@ defmodule ImageMover do
 
     unless File.dir?(img_path) do
       case File.mkdir_p(img_path) do
-        {:ok} -> IO.puts("Created an '#{path}' directory")
-        {:error} -> IO.puts("Could not create '#{path}'' directory")
+        :ok -> IO.puts("Created an '#{path}' directory")
+        {:error, _} -> IO.puts("Could not create '#{path}'' directory")
       end
     end
   end
@@ -43,6 +43,9 @@ defmodule ImageMover do
   `path` defaults to '#{@image_dir_name}'
   """
   def move(files, path \\ @image_dir_name) do
+    match_count = Enum.count(files)
+    IO.puts("Matched #{match_count} files")
+
     Enum.each(files, fn x ->
       case File.rename(x, Path.join(path, x)) do
         :ok -> IO.puts("Moved '#{x}' to '#{path}'")
