@@ -16,7 +16,7 @@ defmodule ImageMover do
   Entry point to the tool
   """
   def start() do
-    create_directory!()
+    create_directory()
 
     Path.wildcard("*.{jpg,gif,bmp,png}")
     |> move()
@@ -24,15 +24,15 @@ defmodule ImageMover do
 
   @doc """
   If the given `path` does not exist, create it
-
-  If path can not be given, raise Error
   """
-  def create_directory!(path \\ @image_dir_name) do
+  def create_directory(path \\ @image_dir_name) do
     img_path = Path.relative_to_cwd(path)
 
     unless File.dir?(img_path) do
-      IO.puts("Creating an '#{path}' directory")
-      File.mkdir_p!(img_path)
+      case File.mkdir_p(img_path) do
+        {:ok} -> IO.puts("Created an '#{path}' directory")
+        {:error} -> IO.puts("Could not create '#{path}'' directory")
+      end
     end
   end
 
@@ -44,8 +44,10 @@ defmodule ImageMover do
   """
   def move(files, path \\ @image_dir_name) do
     Enum.each(files, fn x ->
-      File.rename(x, Path.join(path, x))
-      IO.puts("Moved '#{x}' to '#{path}'")
+      case File.rename(x, Path.join(path, x)) do
+        :ok -> IO.puts("Moved '#{x}' to '#{path}'")
+        {:error, _} -> IO.puts("Error moving '#{x}' to '#{path}'")
+      end
     end)
   end
 end
